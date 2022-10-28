@@ -38,12 +38,12 @@ def main():
         lvl5 = cv2.getTrackbarPos("Max R", window_name2)
         lvl6 = cv2.getTrackbarPos("Min R", window_name2)
 
-        limit_dict = {'B': {'max': lvl1, 'min': lvl2},
+        limit_dict ={'limits_dict': {'B': {'max': lvl1, 'min': lvl2},
             'G': {'max': lvl3, 'min': lvl4},
-            'R': {'max': lvl5, 'min': lvl6}}
-        
-        lvlmax = np.array([limit_dict['B']['max'], limit_dict['G']['max'], limit_dict['R']['max']])
-        lvlmin = np.array([limit_dict['B']['min'], limit_dict['G']['min'], limit_dict['R']['min']])
+            'R': {'max': lvl5, 'min': lvl6}}}
+        limit_dicts = limit_dict['limits_dict']
+        lvlmax = np.array([limit_dicts['B']['max'], limit_dicts['G']['max'], limit_dicts['R']['max']])
+        lvlmin = np.array([limit_dicts['B']['min'], limit_dicts['G']['min'], limit_dicts['R']['min']])
 
         retval, frame = vid.read()
         flip_video = cv2.flip(frame, 1)
