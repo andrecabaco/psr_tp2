@@ -4,11 +4,12 @@
 # PSR, 2022.
 # --------------------------------------------------
 from copy import deepcopy
+from email.policy import default
 
 import numpy as np
 import cv2
 import sys
-
+import argparse
 from colorama import Fore, Style
 
 
@@ -17,6 +18,14 @@ from colorama import Fore, Style
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-j','--json',help='Full path to json file.', type=argparse.FileType('r'))
+    args = parser.parse_args()
+
+    with args.json as file:
+        limits=file.read()
+        print(limits)
+
     vid = cv2.VideoCapture(0)
     window_name = 'TP2'
     cv2.namedWindow(window_name,cv2.WINDOW_NORMAL)
