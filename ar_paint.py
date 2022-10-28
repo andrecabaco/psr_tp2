@@ -15,9 +15,25 @@ import json
 
 
 def selectbiggestComponents(image):
-    # find all your connected components 
+    connectivity=8
+    nLabels, output, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity,cv2.CV_32S)
+    final_image = np.zeros(output.shape, dtype=np.uint8)
+    sizes = stats[1:, -1]
+    nLabels = nLabels - 1
+    x = None
+    y = None
+    final_image = np.zeros(output.shape, dtype=np.uint8)
+    largest_component=0
+
+    for k in range(0, nLabels):
+        if sizes[k] >= largest_component:
+            
+            x, y = centroids[k + 1]
+            largest_component = sizes[k]
+            final_image[output == k + 1] = 255
+
+    return (final_image, x, y)
     
-    return image
 
     
 
@@ -78,22 +94,10 @@ def main():
         cv2.imshow(window_name2, flip_video2)
         
         #mask largest component result frame
-        connectivity=8
-        nLabels, output, stats, centroids = cv2.connectedComponentsWithStats(mask_frame, connectivity,cv2.CV_32S)
-        allsizes=[]
-        largest_number=0
-        for k in range(1,nLabels):
-            
-            size = stats[k, cv2.CC_STAT_AREA]
-            allsizes.append(size)
-            if size > largest_number:
-                largest_number = size
-            else:
-                pass
-        position=allsizes.index(largest_number)
-        image=output[position]
-        # mask_largest = selectbiggestComponents(mask_frame)
-        cv2.imshow(window_name3,image)
+        
+        mask_largest = selectbiggestComponents(mask_frame)
+        flip_video3 = cv2.flip(mask_largest[0], 1)
+        cv2.imshow(window_name3,flip_video3)
 
         
         
