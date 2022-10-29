@@ -5,6 +5,8 @@ import cv2
 import argparse 
 import json
 import numpy as np
+from colorama import Fore, Style
+from copy import deepcopy
 
 #Definição de Argumentos/help menu
 parser = argparse.ArgumentParser(description="Definition of test mode")
@@ -114,7 +116,31 @@ def normal_mode():
 
         if pressed_key == ord('q'):
             break
+        elif pressed_key == ord('w'): # save drawing
+            cv2.imwrite("/home/nunoc99/Desktop/MEAI/PSR/Git_Work/psr_tp2", flip_video5)
 
+        elif pressed_key == ord('c'): # clean the canvas
+            flip_video5 = deepcopy(blank_image)
+            print("The canvas is clean.")
+            pass
+
+        elif pressed_key == ord('r'): # change color to red
+            clr = (0,0,255)
+            print("Color changed to" + Fore.RED + "RED" + Style.RESET_ALL)
+
+        elif pressed_key == ord('g'): # change color to green
+            clr = (0,255,0)
+            print("Color changed to" + Fore.GREEN + "GREEN" + Style.RESET_ALL)
+
+        elif pressed_key == ord('b'): # change color to blue
+            clr = (255,0,0)
+            print("Color changed to" + Fore.BLUE + "BLUE" + Style.RESET_ALL)
+
+        elif pressed_key == ord('+'): # increase pencil line size
+            pass
+
+        elif pressed_key == ord('-'): # decrease pencil line sizw
+            pass
     vid.release()
     cv2.destroyAllWindows()
 
