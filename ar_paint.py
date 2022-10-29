@@ -53,7 +53,7 @@ def normal_mode():
     window_name2 = "Segmented"
     window_name3 = "Mask Largest component"
     window_name4 = "Canvas"
-    blank_image = np.zeros((471, 636, 3)) + 255
+    blank_image = np.zeros((480, 640, 3)) + 255
     #blank_image = cv2.imread("white_image.png", cv2.IMREAD_COLOR)
     thickness=3
     clr=(0,255,255)
@@ -70,7 +70,6 @@ def normal_mode():
 
         retval, frame = vid.read() 
 
-        # original_dimensions = frame.shape
         # blank_image = np.ones((original_dimensions[0], original_dimensions[1], 3), dtype = np.uint8)
         # blank_image = 255* blank_image
         # flip_video = cv2.flip(frame, 1)
@@ -93,7 +92,7 @@ def normal_mode():
         start_point=centroides[k-1]
         end_point=centroides[k]
 
-        
+
         #painting de mask largest component on original image
         frame_copy=np.copy(frame)
         frame_copy[mask_largest[0]==255]=(0,255,0)
