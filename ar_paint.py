@@ -32,9 +32,9 @@ def selectbiggestComponents(image):
 
     for k in range(0, nLabels):
         if sizes[k] >= largest_component:
-            
-            x, y = centroids[k + 1]
+        
             largest_component = sizes[k]
+            x, y = centroids[k + 1]
             final_image[output == k + 1] = 255
 
     return (final_image, x, y)
