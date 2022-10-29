@@ -9,7 +9,7 @@ import numpy as np
 #Definição de Argumentos/help menu
 parser = argparse.ArgumentParser(description="Definition of test mode")
 
-parser.add_argument("-j", "--json", help="Full path to json file.", type=str, required=True)
+parser.add_argument('-j','--json',help='Full path to json file.',required=True, type=argparse.FileType('r'))
 parser.add_argument("-usp", "--use_shake_prevention", help="Shake prevention.", action="store_true", default=False)
 parser.add_argument("-uvs", "--use_video_stream", help="Use video stream as canvas.", action="store_true", default=False)                        
 args = parser.parse_args()
@@ -20,7 +20,6 @@ args = parser.parse_args()
 def selectbiggestComponents(image):
     connectivity=8
     nLabels, output, stats, centroids = cv2.connectedComponentsWithStats(image, connectivity,cv2.CV_32S)
-    final_image = np.zeros(output.shape, dtype=np.uint8)
     sizes = stats[1:, -1]
     nLabels = nLabels - 1
     x = None
@@ -89,7 +88,7 @@ def normal_mode():
         mask_largest = selectbiggestComponents(mask_frame)
         flip_video3 = cv2.flip(mask_largest[0], 1)
         cv2.imshow(window_name3, flip_video3)
-        
+
         cv2.imshow(window_name4, blank_image)
 
         pressed_key = cv2.waitKey(1)
