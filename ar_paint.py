@@ -7,6 +7,7 @@ import json
 import numpy as np
 from colorama import Fore, Style
 from copy import deepcopy
+from datetime import date, datetime
 
 #Definição de Argumentos/help menu
 parser = argparse.ArgumentParser(description="Definition of test mode")
@@ -46,7 +47,7 @@ def normal_mode():
         limits=json.load(file)
         # print(limits)
     limits_dict=limits['limits_dict']
-
+    
     lvlmax = np.array([limits_dict['B']['max'], limits_dict['G']['max'], limits_dict['R']['max']])
     lvlmin = np.array([limits_dict['B']['min'], limits_dict['G']['min'], limits_dict['R']['min']])
 
@@ -55,11 +56,11 @@ def normal_mode():
     window_name2 = "Segmented"
     window_name3 = "Mask Largest component"
     window_name4 = "Canvas"
-    blank_image = np.zeros((480, 640, 3)) + 255
+    blank_image = np.zeros((480, 640, 3))
+    blank_image.fill(255)
     #blank_image = cv2.imread("white_image.png", cv2.IMREAD_COLOR)
     thickness=3
     clr=(0,255,255)
-    lapis=5
     centroides=[]
 
 
@@ -117,32 +118,52 @@ def normal_mode():
         if pressed_key == ord('q'):
             break
         elif pressed_key == ord('w'): # save drawing
-            cv2.imwrite("/home/nunoc99/Desktop/MEAI/PSR/Git_Work/psr_tp2", flip_video5)
+            current_data = datetime.now().strftime("%H:%M:%S_%Y")
+            
+            todays_date=date.today()
+            dia=todays_date.day
+            month=todays_date.month
+            month_object = datetime.strptime(str(month), "%m")
+            day_object= datetime.strptime(str(dia), "%d")
+            month_name = month_object.strftime("%b")
+            day_name=day_object.strftime('%a')
+            cv2.imwrite('drawing_'+day_name +'_'+month_name+  '_' + str(dia)+'_' + current_data + '.png', flip_video5)
 
         elif pressed_key == ord('c'): # clean the canvas
-            flip_video5 = deepcopy(blank_image)
+            centroides=[]
+            blank_image.fill(255)
             print("The canvas is clean.")
             pass
 
         elif pressed_key == ord('r'): # change color to red
             clr = (0,0,255)
-            print("Color changed to" + Fore.RED + "RED" + Style.RESET_ALL)
+            print("Color changed to " + Fore.RED + "RED" + Style.RESET_ALL)
 
         elif pressed_key == ord('g'): # change color to green
             clr = (0,255,0)
-            print("Color changed to" + Fore.GREEN + "GREEN" + Style.RESET_ALL)
+            print("Color changed to " + Fore.GREEN + "GREEN" + Style.RESET_ALL)
 
         elif pressed_key == ord('b'): # change color to blue
             clr = (255,0,0)
-            print("Color changed to" + Fore.BLUE + "BLUE" + Style.RESET_ALL)
+            print("Color changed to " + Fore.BLUE + "BLUE" + Style.RESET_ALL)
 
         elif pressed_key == ord('+'): # increase pencil line size
-            pass
+            thickness +=1
+            print('thickness is ' + str(thickness))
 
         elif pressed_key == ord('-'): # decrease pencil line sizw
-            pass
+            
+            if thickness==1:
+                print('thickness can not be 0 or less.')
+                print('thickness is ' + str(thickness))
+            else:
+                thickness -=1
+                print('thickness is ' + str(thickness))
+                
+            
 
-        
+
+
     vid.release()
     cv2.destroyAllWindows()
 
