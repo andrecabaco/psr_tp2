@@ -54,13 +54,15 @@ def normal_mode():
     window_name3 = "Mask Largest component"
     window_name4 = "Canvas"
     #blank_image = cv2.imread("white_image.png", cv2.IMREAD_COLOR)
-
+    thickness=-1
+    clr=(0,255,255)
+    lapis=5
 
 
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
     cv2.namedWindow(window_name2, cv2.WINDOW_NORMAL)
     cv2.namedWindow(window_name3, cv2.WINDOW_NORMAL)
-    #cv2.namedWindow(window_name4, cv2.WINDOW_AUTOSIZE)
+    cv2.namedWindow(window_name4, cv2.WINDOW_NORMAL)
 
     while True:
 
@@ -72,7 +74,7 @@ def normal_mode():
         blank_image = np.ones((original_dimensions[0], original_dimensions[1], 3), dtype = np.uint8)
         blank_image = 255* blank_image
 
-        cv2.namedWindow(window_name4, cv2.WINDOW_NORMAL)
+        
         # flip_video = cv2.flip(frame, 1)
         
 
@@ -87,22 +89,24 @@ def normal_mode():
         cv2.imshow(window_name3, flip_video3)
         x=mask_largest[1]
         y=mask_largest[2]
+        centroide=(int(x),int(y)) 
 
         #painting de mask largest component on original image
         frame_copy=np.copy(frame)
         frame_copy[mask_largest[0]==255]=(0,255,0)
         
         #adição da cruz na imagem original
-        if x is not None:
-            cv2.line(frame_copy, (int(x) - 5,int(y)), (int(x) + 5, int(y)), (0, 0, 255), 5)
-            cv2.line(frame_copy, (int(x), int(y) + 5), (int(x), int(y) - 5), (0, 0, 255), 5)
+        cv2.line(frame_copy, (int(x) - 5,int(y)), (int(x) + 5, int(y)), (0, 0, 255), 3)
+        cv2.line(frame_copy, (int(x), int(y) + 5), (int(x), int(y) - 5), (0, 0, 255), 3)
 
         flip_video4 = cv2.flip(frame_copy, 1)
         cv2.imshow(window_name, flip_video4)
 
 
         #desenhar na tela branca.
-        cv2.imshow(window_name4, blank_image)
+        cv2.circle(blank_image,centroide,lapis,clr,thickness)
+        flip_video5=cv2.flip(blank_image, 1)
+        cv2.imshow(window_name4, flip_video5)
 
         pressed_key = cv2.waitKey(1)
 
