@@ -141,6 +141,8 @@ def normal_mode():
 
         elif pressed_key == ord('-'): # decrease pencil line sizw
             pass
+
+        
     vid.release()
     cv2.destroyAllWindows()
 
