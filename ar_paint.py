@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
+from tokenize import blank_re
 import cv2
 import argparse 
 import json
+import numpy as np
 
 #Definição de Argumentos/help menu
 parser = argparse.ArgumentParser(description="Definition of test mode")
@@ -28,16 +30,29 @@ def normal_mode():
     window_name2 = "Segmented"
     window_name3 = "Mask Largest component"
     window_name4 = "Canvas"
-    blank_image = cv2.imread("/home/nunoc99/Desktop/MEAI/PSR/Parte_07/White-400x600px2-600x400-21732.png", cv2.IMREAD_COLOR)
+    #blank_image = cv2.imread("white_image.png", cv2.IMREAD_COLOR)
+
+
 
     cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
     cv2.namedWindow(window_name2, cv2.WINDOW_AUTOSIZE)
     cv2.namedWindow(window_name3, cv2.WINDOW_AUTOSIZE)
-    cv2.namedWindow(window_name4, cv2.WINDOW_AUTOSIZE)
+    #cv2.namedWindow(window_name4, cv2.WINDOW_AUTOSIZE)
 
     while True:
 
         retval, frame = vid.read() 
+
+        original_dimensions = frame.shape
+
+
+        blank_image = np.ones((original_dimensions[0], original_dimensions[1], 3), dtype = np.uint8)
+        blank_image = 255* blank_image
+
+        cv2.namedWindow(window_name4, cv2.WINDOW_AUTOSIZE)
+
+
+
         flip_video = cv2.flip(frame, 1)
         cv2.imshow(window_name, flip_video)
 
