@@ -121,17 +121,17 @@ def normal_mode():
             current_data = datetime.now().strftime("%H:%M:%S_%Y")
             
             todays_date=date.today()
-            dia=todays_date.day
-            month=todays_date.month
-            month_object = datetime.strptime(str(month), "%m")
-            day_object= datetime.strptime(str(dia), "%d")
-            month_name = month_object.strftime("%b")
-            day_name=day_object.strftime('%a')
+            dia=todays_date.day #retira o valor do dia em str
+            month=todays_date.month #retira o valor do mes em str
+            month_object = datetime.strptime(str(month), "%m") # converte a str para time em 01,02,03
+            day_object= datetime.strptime(str(dia), "%d") # converte a str para time em 01,02,03
+            month_name = month_object.strftime("%b") #converte o 01,02 para mes em out set...
+            day_name=day_object.strftime('%a') #converte o 01,02 para dia em seg, ter, qua...
             cv2.imwrite('drawing_'+day_name +'_'+month_name+  '_' + str(dia)+'_' + current_data + '.png', flip_video5)
 
         elif pressed_key == ord('c'): # clean the canvas
-            centroides=[]
-            blank_image.fill(255)
+            centroides=[] #reset no centroides usados para desenhar os traços
+            blank_image.fill(255) #reset na imagem com tudo para branco.
             print("The canvas is clean.")
             pass
 
