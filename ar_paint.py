@@ -57,9 +57,9 @@ def normal_mode():
 
 
 
-    cv2.namedWindow(window_name, cv2.WINDOW_AUTOSIZE)
-    cv2.namedWindow(window_name2, cv2.WINDOW_AUTOSIZE)
-    cv2.namedWindow(window_name3, cv2.WINDOW_AUTOSIZE)
+    cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
+    cv2.namedWindow(window_name2, cv2.WINDOW_NORMAL)
+    cv2.namedWindow(window_name3, cv2.WINDOW_NORMAL)
     #cv2.namedWindow(window_name4, cv2.WINDOW_AUTOSIZE)
 
     while True:
@@ -72,7 +72,7 @@ def normal_mode():
         blank_image = np.ones((original_dimensions[0], original_dimensions[1], 3), dtype = np.uint8)
         blank_image = 255* blank_image
 
-        cv2.namedWindow(window_name4, cv2.WINDOW_AUTOSIZE)
+        cv2.namedWindow(window_name4, cv2.WINDOW_NORMAL)
         # flip_video = cv2.flip(frame, 1)
         
 
