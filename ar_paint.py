@@ -73,22 +73,35 @@ def normal_mode():
         blank_image = 255* blank_image
 
         cv2.namedWindow(window_name4, cv2.WINDOW_AUTOSIZE)
-
-
-
-        flip_video = cv2.flip(frame, 1)
-        cv2.imshow(window_name, flip_video)
+        # flip_video = cv2.flip(frame, 1)
+        
 
         #display masked resulting frame
         mask_frame = cv2.inRange(frame, lvlmin, lvlmax)
         flip_video2 = cv2.flip(mask_frame, 1)
         cv2.imshow(window_name2, flip_video2)
+
         #mask largest component result frame
-        
         mask_largest = selectbiggestComponents(mask_frame)
         flip_video3 = cv2.flip(mask_largest[0], 1)
         cv2.imshow(window_name3, flip_video3)
+        x=mask_largest[1]
+        y=mask_largest[2]
 
+        #painting de mask largest component on original image
+        frame_copy=np.copy(frame)
+        frame_copy[mask_largest[0]==255]=(0,255,0)
+        
+        #adição da cruz na imagem original
+        if x is not None:
+            cv2.line(frame_copy, (int(x) - 5,int(y)), (int(x) + 5, int(y)), (0, 0, 255), 5)
+            cv2.line(frame_copy, (int(x), int(y) + 5), (int(x), int(y) - 5), (0, 0, 255), 5)
+
+        flip_video4 = cv2.flip(frame_copy, 1)
+        cv2.imshow(window_name, flip_video4)
+
+
+        #desenhar na tela branca.
         cv2.imshow(window_name4, blank_image)
 
         pressed_key = cv2.waitKey(1)
