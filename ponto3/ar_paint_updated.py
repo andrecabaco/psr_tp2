@@ -7,6 +7,7 @@ import numpy as np
 from colorama import Fore, Style
 from copy import deepcopy
 from datetime import date, datetime
+import copy
 
 #Definição de Argumentos/help menu
 parser = argparse.ArgumentParser(description="Definition of test mode:")
@@ -42,6 +43,20 @@ def distanceCalculate(p1, p2):
     """p1 and p2 in format (x1,y1) and (x2,y2) tuples"""
     dis = ((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5
     return round(dis)
+
+
+#Function to mix the captured image with drawing (for uvs mode)
+def mix_images(canvas, frame):
+    lvlmax_white = np.array([255, 255, 255])
+    lvlmin_white = np.array([255, 255, 255])
+    mask_for_whites = cv2.inRange(canvas, lvlmin_white, lvlmax_white) # Defining a mask for white pixels
+    mask_for_whites_bool=mask_for_whites.astype(np.bool)
+    result = copy.deepcopy(frame)
+    result[~mask_for_whites_bool] = canvas[~mask_for_whites_bool] # Blending the non white pixels of canvas with captured image
+
+    return result
+
+
 
 def normal_mode():
 
@@ -175,20 +190,16 @@ def normal_mode():
                 print('thickness is ' + str(thickness))
 
 
-        # If the drawing flags are activated, it is shown the result in real time
-
         #Draw a rectangle
         elif pressed_key == ord('s'):
             if not drawing_rectangle:
-                drawing_rectangle = True
                 first_point = centroide
                 print('You started drawing a rectangle.')
-                #drawing_rectangle = True
+                drawing_rectangle = True
             elif drawing_rectangle:
-                drawing_rectangle = False
                 cv2.rectangle(blank_image, first_point, centroide, clr, thickness)
                 print('You just finished a rectangle.')
-                #drawing_rectangle = False
+                drawing_rectangle = False
 
         #Draw a circle
         elif pressed_key == ord('e'):
@@ -218,25 +229,15 @@ def normal_mode():
             cv2.imshow(window_name4, flip_video5)
 
 
-
-    
-        
-
-    
-
-
-
-
-
-
-
-                
-
     vid.release()
     cv2.destroyAllWindows()
 
 def usp_mode():
     print("Use shake prevention mode in execution...")
+
+
+
+
 
 def uvs_mode():
     print("Use video stream drawing mode in execution...")
@@ -250,15 +251,20 @@ def uvs_mode():
     lvlmin = np.array([limits_dict['B']['min'], limits_dict['G']['min'], limits_dict['R']['min']])
 
     vid = cv2.VideoCapture(0)
+    retval, frame = vid.read()
     window_name = "Orignal"
     window_name2 = "Segmented"
     window_name3 = "Mask Largest component"
     window_name4 = "Canvas"
-    frame2 = np.zeros((480, 640, 3))
-    frame2.fill(255)
+    blank_image = np.ones(frame.shape, dtype = np.uint8)
+    blank_image = 255* blank_image
     thickness=3
     clr=(0,255,255)
     centroides=[]
+
+    #For shapes
+    drawing_circle = False
+    drawing_rectangle = False
 
 
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
@@ -269,7 +275,9 @@ def uvs_mode():
     while True:
 
         retval, frame = vid.read() #capture for the original video
-        retval, frame2 = vid.read() #capture for the canvas video
+
+        frame_gui = copy.deepcopy(frame)
+        flip_video = cv2.flip(frame_gui, 1)
         
         #display masked resulting frame
         mask_frame = cv2.inRange(frame, lvlmin, lvlmax)
@@ -300,10 +308,13 @@ def uvs_mode():
         flip_video4 = cv2.flip(frame_copy, 1)
         cv2.imshow(window_name, flip_video4)
 
-        #desenhar na tela do vídeo
-        cv2.line(frame2, start_point, end_point, clr, thickness)
-        flip_video5=cv2.flip(frame2, 1)
-        cv2.imshow(window_name4, flip_video5)
+        #STREAM CANVAS DRAWING
+
+        if not drawing_rectangle and not drawing_circle:
+
+            cv2.line(blank_image, start_point, end_point, clr, thickness)
+            flip_video5=cv2.flip(blank_image, 1)
+            cv2.imshow(window_name4, mix_images(flip_video5, flip_video))
 
         pressed_key = cv2.waitKey(1)
 
@@ -324,7 +335,7 @@ def uvs_mode():
 
         elif pressed_key == ord('c'): # clean the canvas
             centroides=[] #reset no centroides usados para desenhar os traços
-            frame2.fill(255) #reset na imagem com tudo para branco.
+            blank_image.fill(255) #reset na imagem com tudo para branco.
             print("The canvas is clean.")
             pass
 
@@ -352,10 +363,52 @@ def uvs_mode():
             else:
                 thickness -=1
                 print('thickness is ' + str(thickness))
+
+        #Draw a rectangle
+        elif pressed_key == ord('s'):
+            if not drawing_rectangle:
+                first_point = centroide
+                print('You started drawing a rectangle.')
+                drawing_rectangle = True
+               
+            elif drawing_rectangle:
+                cv2.rectangle(blank_image, first_point, centroide, clr, thickness)
+                print('You just finished a rectangle.')
+                drawing_rectangle = False
+                
+
+        #Draw a circle
+        elif pressed_key == ord('e'):
+            if not drawing_circle:
+                center = centroide
+                print('You started drawing a circle.')
+                drawing_circle = True
+            elif drawing_circle:
+                cv2.circle(blank_image, center, circle_radius, clr, thickness)
+                print('You just finished a circle.')
+                drawing_circle = False
+
+        # If the drawing flags are activated, it is shown the result in real time
+
+        elif drawing_rectangle:
+            image_rectangle = np.copy(blank_image)
+            cv2.rectangle(image_rectangle, first_point, centroide, clr, thickness)
+            flip_video5=cv2.flip(image_rectangle, 1)
+            cv2.imshow(window_name4, mix_images(flip_video5, flip_video))
+
+
+        elif drawing_circle:
+            circle_radius = distanceCalculate(center,centroide)
+            image_circle = np.copy(blank_image)
+            cv2.circle(image_circle, center, circle_radius, clr, thickness)
+            flip_video5=cv2.flip(image_circle, 1)
+            cv2.imshow(window_name4, mix_images(flip_video5, flip_video))
                 
 
     vid.release()
     cv2.destroyAllWindows()
+
+
 
 def main():
 
