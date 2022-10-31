@@ -73,6 +73,7 @@ def main():
         cv2.imshow(window_name, blank_image)
         
         distancias.remove(dist_init)
+        dist_init=10000
         
     
     
