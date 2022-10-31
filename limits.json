@@ -1,1 +1,1 @@
-{"limits_dict": {"B": {"max": 50, "min": 10}, "G": {"max": 140, "min": 40}, "R": {"max": 200, "min": 70}}}
+{"limits_dict": {"B": {"max": 255, "min": 240}, "G": {"max": 255, "min": 249}, "R": {"max": 255, "min": 241}}}
