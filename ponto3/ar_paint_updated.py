@@ -56,20 +56,21 @@ def normal_mode():
     lvlmin = np.array([limits_dict['B']['min'], limits_dict['G']['min'], limits_dict['R']['min']])
 
     vid = cv2.VideoCapture(0)
+    retval, frame = vid.read()
     window_name = "Orignal"
     window_name2 = "Segmented"
     window_name3 = "Mask Largest component"
     window_name4 = "Canvas"
-    blank_image = np.zeros((480, 640, 3))
-    blank_image.fill(255)
+    blank_image = np.ones(frame.shape, dtype = np.uint8)
+    blank_image = 255* blank_image
     #blank_image = cv2.imread("white_image.png", cv2.IMREAD_COLOR)
     thickness=3
     clr=(0,255,255)
     centroides=[]
 
     #For shapes
-    drawing = False
-    ipoint = (-1,-1)
+    drawing_circle = False
+    drawing_rectangle = False
 
 
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
@@ -117,9 +118,11 @@ def normal_mode():
 
 
         #desenhar na tela branca.
-        cv2.line(blank_image, start_point, end_point, clr, thickness)
-        flip_video5=cv2.flip(blank_image, 1)
-        cv2.imshow(window_name4, flip_video5)
+        if not drawing_rectangle and not drawing_circle:
+
+            cv2.line(blank_image, start_point, end_point, clr, thickness)
+            flip_video5=cv2.flip(blank_image, 1)
+            cv2.imshow(window_name4, flip_video5)
 
         
 
@@ -171,24 +174,52 @@ def normal_mode():
                 thickness -=1
                 print('thickness is ' + str(thickness))
 
-        elif  pressed_key == ord('s') and drawing == False: # draw a rectangle
-            print("Started drawing")
-            drawing = True
-            ipoint = centroide
-            #cv2.rectangle(blank_image, ipoint, end_point, clr, thickness)
 
-        elif  pressed_key == ord('s') and drawing == True: # draw a rectangle
-            cv2.rectangle(blank_image, ipoint, end_point, clr, thickness)
-            drawing = False
+        # If the drawing flags are activated, it is shown the result in real time
+
+        #Draw a rectangle
+        elif pressed_key == ord('s'):
+            if not drawing_rectangle:
+                drawing_rectangle = True
+                first_point = centroide
+                print('You started drawing a rectangle.')
+                #drawing_rectangle = True
+            elif drawing_rectangle:
+                drawing_rectangle = False
+                cv2.rectangle(blank_image, first_point, centroide, clr, thickness)
+                print('You just finished a rectangle.')
+                #drawing_rectangle = False
+
+        #Draw a circle
+        elif pressed_key == ord('e'):
+            if not drawing_circle:
+                center = centroide
+                print('You started drawing a circle.')
+                drawing_circle = True
+            elif drawing_circle:
+                cv2.circle(blank_image, center, circle_radius, clr, thickness)
+                print('You just finished a circle.')
+                drawing_circle = False
+
+        # If the drawing flags are activated, it is shown the result in real time
+
+        elif drawing_rectangle:
+            image_rectangle = np.copy(blank_image)
+            cv2.rectangle(image_rectangle, first_point, centroide, clr, thickness)
+            flip_video5=cv2.flip(image_rectangle, 1)
+            cv2.imshow(window_name4, flip_video5)
+
+
+        elif drawing_circle:
+            circle_radius = distanceCalculate(center,centroide)
+            image_circle = np.copy(blank_image)
+            cv2.circle(image_circle, center, circle_radius, clr, thickness)
+            flip_video5=cv2.flip(image_circle, 1)
+            cv2.imshow(window_name4, flip_video5)
 
 
 
-        elif  pressed_key == ord('e') and drawing == True: # draw a rectangle
-            cv2.circle(blank_image, ipoint, distanceCalculate(end_point, ipoint), clr, thickness)
-            drawing = False
-        
-
-        print(drawing)
+    
         
 
     
