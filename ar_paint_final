@@ -10,6 +10,7 @@ from copy import deepcopy
 from datetime import date, datetime
 import copy
 from functools import partial
+import random
 
 #Definição de Argumentos/help menu
 parser = argparse.ArgumentParser(description="Definition of test mode:")
@@ -47,6 +48,13 @@ def distanceCalculate(p1, p2):
     """p1 and p2 in format (x1,y1) and (x2,y2) tuples"""
     dis = ((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5
     return round(dis)
+
+def coloririmagem(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    thresh = 127
+    im_bw = cv2.threshold(gray, thresh, 255, cv2.THRESH_BINARY)
+    img[gray==255]=(0,0,255)
+    cv2.imshow('a',img)
 
 def mouseCallback(event, x, y, flags, userdata, options):
 
@@ -413,8 +421,6 @@ def usp_mode():
 
 
 
-
-
 def uvs_mode():
     print("\nUse video stream drawing mode in execution...\n")
     print("-----------------Key Commands Menu---------------------\n")
@@ -597,31 +603,102 @@ def uvs_mode():
 
 def numbered_paint():
 
-    print("\nNumbered paint mode in execution...\n")
+    print("\nNormal mode in execution...")
     print("-----------------Key Commands Menu---------------------\n")
-    print("Press 'r' or '1' to change the pencil color to" + Fore.RED + " red.\n" + Style.RESET_ALL)
-    print("Press 'g' or '2' to change the pencil color to" + Fore.GREEN + " green.\n" + Style.RESET_ALL)
-    print("Press 'b' or '3' to change the pencil color to" + Fore.BLUE + " blue.\n" + Style.RESET_ALL)
-    print("Press 'y' or '4' to change the pencil color to" + Fore.YELLOW + " yellow.\n" + Style.RESET_ALL)
+    print("Press 'r' to change the pencil color to" + Fore.RED + " red.\n" + Style.RESET_ALL)
+    print("Press 'g' to change the pencil color to" + Fore.GREEN + " green.\n" + Style.RESET_ALL)
+    print("Press 'b' to change the pencil color to" + Fore.BLUE + " blue.\n" + Style.RESET_ALL)
+    print("Press 'y' to change the pencil color to" + Fore.YELLOW + " yellow.\n" + Style.RESET_ALL)
     print("Press '+' to increase the pencil line thickness.\n")
     print("Press '-' to decrease the pencil line thickness.\n")
     print("Press 'c' to clean the canvas.\n")
     print("Press 'w' to save the drawing/painting.\n")
     print("------------------------------------------------------\n")
 
+    with args.json as file:
+        limits=json.load(file)
+        # print(limits)
+    limits_dict=limits['limits_dict']
     
+    lvlmax = np.array([limits_dict['B']['max'], limits_dict['G']['max'], limits_dict['R']['max']])
+    lvlmin = np.array([limits_dict['B']['min'], limits_dict['G']['min'], limits_dict['R']['min']])
+
+    vid = cv2.VideoCapture(0)
+    retval, frame = vid.read()
     window_name = "Orignal"
-    numbered_image=cv2.imread('pinguim.png') 
-    numbered_image2=cv2.imread('pinguim.png') 
+    window_name2 = "Segmented"
+    window_name3 = "Mask Largest component"
+    window_name4 = "Divisão"
+    blank_image = cv2.imread('divisao.png')
+    blank_image1 = cv2.imread('divisao.png')
+    blank_image1=coloririmagem(blank_image1)
+    #blank_image = cv2.imread("white_image.png", cv2.IMREAD_COLOR)
+    thickness=3
+    clr=(0,255,255)
+    centroides=[]
+
+   
+
+
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-    global thickness
-    options = {'is_drawing' : False,'pinguim_image' : numbered_image,
-               'xs' : [], 'ys' : [],'pencil_color' : (0,0,0)}
-    
+    cv2.namedWindow(window_name2, cv2.WINDOW_NORMAL)
+    cv2.namedWindow(window_name3, cv2.WINDOW_NORMAL)
+    cv2.namedWindow(window_name4, cv2.WINDOW_NORMAL)
 
     while True:
-        cv2.setMouseCallback(window_name, partial(mouseCallback, options=options))
-        cv2.imshow(window_name,numbered_image)
+
+        retval, frame = vid.read() 
+
+        # blank_image = np.ones((original_dimensions[0], original_dimensions[1], 3), dtype = np.uint8)
+        # blank_image = 255* blank_image
+        # flip_video = cv2.flip(frame, 1)
+        
+
+        #display masked resulting frame
+        mask_frame = cv2.inRange(frame, lvlmin, lvlmax)
+        flip_video2 = cv2.flip(mask_frame, 1)
+        cv2.imshow(window_name2, flip_video2)
+
+        #mask largest component result frame
+        mask_largest = selectbiggestComponents(mask_frame)
+        flip_video3 = cv2.flip(mask_largest[0], 1)
+        cv2.imshow(window_name3, flip_video3)
+        x=mask_largest[1]
+        y=mask_largest[2]
+        centroide=(int(x),int(y)) 
+        centroides.append(centroide)
+        k=centroides.index(centroide)
+        start_point=centroides[k-1]
+        end_point=centroides[k]
+
+
+        #painting de mask largest component on original image
+        frame_copy=np.copy(frame)
+        frame_copy[mask_largest[0]==255]=(0,255,0)
+        
+        #adição da cruz na imagem original
+        cv2.line(frame_copy, (int(x) - 5,int(y)), (int(x) + 5, int(y)), (0, 0, 255), 3)
+        cv2.line(frame_copy, (int(x), int(y) + 5), (int(x), int(y) - 5), (0, 0, 255), 3)
+
+        flip_video4 = cv2.flip(frame_copy, 1)
+        cv2.imshow(window_name, flip_video4)
+
+        
+        
+        #desenhar na tela branca.
+        dist_usp=distanceCalculate(start_point, end_point)
+        
+        if dist_usp<100:
+            cv2.line(blank_image, start_point, end_point, clr, thickness)
+            flip_video5=cv2.flip(blank_image, 1)
+            cv2.imshow(window_name4, flip_video5)
+        else:
+            cv2.circle(blank_image, end_point, thickness, clr, -1)
+            flip_video5=cv2.flip(blank_image, 1)
+            cv2.imshow(window_name4, flip_video5)
+
+        
+
         pressed_key = cv2.waitKey(1)
 
         if pressed_key == ord('q'):
@@ -636,31 +713,26 @@ def numbered_paint():
             day_object= datetime.strptime(str(dia), "%d") # converte a str para time em 01,02,03
             month_name = month_object.strftime("%b") #converte o 01,02 para mes em out set...
             day_name=day_object.strftime('%a') #converte o 01,02 para dia em seg, ter, qua...
-            cv2.imwrite('drawing_'+day_name +'_'+month_name+  '_' + str(dia)+'_' + current_data + '.png', numbered_image)
+            cv2.imwrite('drawing_'+day_name +'_'+month_name+  '_' + str(dia)+'_' + current_data + '.png', flip_video5)
             print('drawing saved in document: '+'drawing_'+day_name +'_'+month_name+  '_' + str(dia)+'_' + current_data + '.png')
 
         elif pressed_key == ord('c'): # clean the canvas
-            options['xs'] = []
-            options['ys'] = []
-            options['pinguim_image'] = numbered_image2 #reset na imagem com tudo para branco.
+            centroides=[] #reset no centroides usados para desenhar os traços
+            blank_image.fill(255) #reset na imagem com tudo para branco.
             print("The canvas is clean.")
             pass
 
-        elif pressed_key == ord('r') or pressed_key == ord('1'): # change color to red
-            options['pencil_color'] = (0,0,255)
+        elif pressed_key == ord('r'): # change color to red
+            clr = (0,0,255)
             print("Color changed to " + Fore.RED + "RED" + Style.RESET_ALL)
 
-        elif pressed_key == ord('g') or pressed_key == ord('2'): # change color to green
-            options['pencil_color'] = (0,255,0)
+        elif pressed_key == ord('g'): # change color to green
+            clr = (0,255,0)
             print("Color changed to " + Fore.GREEN + "GREEN" + Style.RESET_ALL)
 
-        elif pressed_key == ord('b') or pressed_key == ord('3'): # change color to blue
-            options['pencil_color'] = (255,0,0)
+        elif pressed_key == ord('b'): # change color to blue
+            clr = (255,0,0)
             print("Color changed to " + Fore.BLUE + "BLUE" + Style.RESET_ALL)
-
-        elif pressed_key == ord('y') or pressed_key == ord('4'): # change color to yellow
-            options['pencil_color'] = (0,255,255)
-            print("Color changed to " + Fore.YELLOW + "YELLOW" + Style.RESET_ALL)
 
         elif pressed_key == ord('+'): # increase pencil line size
             thickness +=1
@@ -676,7 +748,8 @@ def numbered_paint():
                 print('thickness is ' + str(thickness))
 
 
-    
+
+    vid.release()
     cv2.destroyAllWindows()
 
 
