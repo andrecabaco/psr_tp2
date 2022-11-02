@@ -64,6 +64,7 @@ def comparaçao(img):
     amarelo={'amarelo':{'B': {'max': 255 , 'min': 220 },
             'G': {'max': 255 , 'min': 220 },
             'R': {'max': 10 , 'min':0 }}}        
+
     azul_tresh = azul['azul']
     vermelho_tresh = vermelho['vermelho']
     verde_tresh = verde['verde']
@@ -76,10 +77,20 @@ def comparaçao(img):
     lvlmin_vermelho = np.array([vermelho_tresh['B']['min'], vermelho_tresh['G']['min'], vermelho_tresh['R']['min']])
 
     lvlmax_verde = np.array([verde_tresh['B']['max'], verde_tresh['G']['max'], verde_tresh['R']['max']])
-    lvlmax_verde = np.array([verde_tresh['B']['min'], verde_tresh['G']['min'], verde_tresh['R']['min']])
+    lvlmin_verde = np.array([verde_tresh['B']['min'], verde_tresh['G']['min'], verde_tresh['R']['min']])
 
     lvlmax_amarelo = np.array([amarelo_tresh['B']['max'], amarelo_tresh['G']['max'], amarelo_tresh['R']['max']])
-    lvlmax_amarelo = np.array([amarelo_tresh['B']['min'], amarelo_tresh['G']['min'], amarelo_tresh['R']['min']])
+    lvlmin_amarelo = np.array([amarelo_tresh['B']['min'], amarelo_tresh['G']['min'], amarelo_tresh['R']['min']])
+
+    azul1=cv2.inRange(img,lvlmin_azul,lvlmax_azul)
+    vermelho1=cv2.inRange(img,lvlmin_vermelho,lvlmax_vermelho)
+    verde1=cv2.inRange(img,lvlmin_verde,lvlmax_verde)
+    amarelo1=cv2.inRange(img,lvlmin_amarelo,lvlmax_amarelo)
+
+    azultotal=cv2.inRange(original_image,lvlmin_azul,lvlmax_azul)
+    vermelhototal=cv2.inRange(original_image,lvlmin_vermelho,lvlmax_vermelho)
+    verdetotal=cv2.inRange(original_image,lvlmin_verde,lvlmax_verde)
+    amarelototal=cv2.inRange(original_image,lvlmin_amarelo,lvlmax_amarelo)
 
 def mouseCallback(event, x, y, flags, userdata, options):
 
