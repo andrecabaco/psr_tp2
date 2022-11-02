@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from re import X
 import cv2
 import argparse 
 import json
@@ -8,6 +9,11 @@ from colorama import Fore, Style
 from copy import deepcopy
 from datetime import date, datetime
 import copy
+from PIL import Image
+import requests
+from io import BytesIO
+import io
+
 
 #Definição de Argumentos/help menu
 parser = argparse.ArgumentParser(description="Definition of test mode:")
@@ -588,10 +594,11 @@ def numbered_paint():
 
     
     window_name = "Orignal"
-    numbered_image = cv2.imread("psr_tp2/pinguim.png")
-    numbered_image_copy = np.copy(numbered_image)
+    numbered_image=cv2.imread('pinguim.png',cv2.IMREAD_COLOR) 
+    numbered_image_copy=np.copy(numbered_image)
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-    cv2.imshow(window_name,numbered_image)
+    cv2.imshow(window_name,numbered_image_copy)
+    thickness=3
 
     while True:
         
