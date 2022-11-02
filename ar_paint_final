@@ -9,11 +9,7 @@ from colorama import Fore, Style
 from copy import deepcopy
 from datetime import date, datetime
 import copy
-from PIL import Image
-import requests
-from io import BytesIO
-import io
-
+from functools import partial
 
 #Definição de Argumentos/help menu
 parser = argparse.ArgumentParser(description="Definition of test mode:")
@@ -24,6 +20,7 @@ parser.add_argument("-uvs", "--use_video_stream", help="Use video stream as canv
 parser.add_argument("-np", "--numbered_paint", help="Paint a numbered image.", action="store_true", default=False)                        
 args = parser.parse_args()
 
+thickness=3
 # use_shake_prevention = args.use_shake_prevention
 # use_video_stream = args.use_video_stream
 
@@ -51,7 +48,27 @@ def distanceCalculate(p1, p2):
     dis = ((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5
     return round(dis)
 
+def mouseCallback(event, x, y, flags, userdata, options):
 
+    if event == cv2.EVENT_LBUTTONDOWN:
+        if options['is_drawing']:
+            print('Stop drawing')
+            options['is_drawing'] = False
+        else:
+            print('Start drawing')
+            options['is_drawing'] = True
+
+    elif event == cv2.EVENT_MOUSEMOVE:
+        if options['is_drawing']:
+            options['xs'].append(x)
+            options['ys'].append(y)
+            
+            if len(options['xs']) > 2:
+                x1 = options['xs'][-2]
+                y1 = options['ys'][-2]
+                x2 = options['xs'][-1]
+                y2 = options['ys'][-1]
+                cv2.line(options['pinguim_image'], (x1, y1), (x2, y2), options['pencil_color'], thickness)
 #Function to mix the captured image with drawing (for uvs mode)
 def mix_images(canvas, frame):
     lvlmax_white = np.array([255, 255, 255])
@@ -594,14 +611,17 @@ def numbered_paint():
 
     
     window_name = "Orignal"
-    numbered_image=cv2.imread('pinguim.png',cv2.IMREAD_COLOR) 
-    numbered_image_copy=np.copy(numbered_image)
+    numbered_image=cv2.imread('pinguim.png') 
+    numbered_image2=cv2.imread('pinguim.png') 
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-    cv2.imshow(window_name,numbered_image_copy)
-    thickness=3
+    global thickness
+    options = {'is_drawing' : False,'pinguim_image' : numbered_image,
+               'xs' : [], 'ys' : [],'pencil_color' : (0,0,0)}
+    
 
     while True:
-        
+        cv2.setMouseCallback(window_name, partial(mouseCallback, options=options))
+        cv2.imshow(window_name,numbered_image)
         pressed_key = cv2.waitKey(1)
 
         if pressed_key == ord('q'):
@@ -616,29 +636,30 @@ def numbered_paint():
             day_object= datetime.strptime(str(dia), "%d") # converte a str para time em 01,02,03
             month_name = month_object.strftime("%b") #converte o 01,02 para mes em out set...
             day_name=day_object.strftime('%a') #converte o 01,02 para dia em seg, ter, qua...
-            cv2.imwrite('drawing_'+day_name +'_'+month_name+  '_' + str(dia)+'_' + current_data + '.png', numbered_image_copy)
+            cv2.imwrite('drawing_'+day_name +'_'+month_name+  '_' + str(dia)+'_' + current_data + '.png', numbered_image)
             print('drawing saved in document: '+'drawing_'+day_name +'_'+month_name+  '_' + str(dia)+'_' + current_data + '.png')
 
         elif pressed_key == ord('c'): # clean the canvas
-            centroides=[] #reset no centroides usados para desenhar os traços
-            numbered_image_copy = numbered_image #reset na imagem com tudo para branco.
+            options['xs'] = []
+            options['ys'] = []
+            options['pinguim_image'] = numbered_image2 #reset na imagem com tudo para branco.
             print("The canvas is clean.")
             pass
 
         elif pressed_key == ord('r') or pressed_key == ord('1'): # change color to red
-            clr = (0,0,255)
+            options['pencil_color'] = (0,0,255)
             print("Color changed to " + Fore.RED + "RED" + Style.RESET_ALL)
 
         elif pressed_key == ord('g') or pressed_key == ord('2'): # change color to green
-            clr = (0,255,0)
+            options['pencil_color'] = (0,255,0)
             print("Color changed to " + Fore.GREEN + "GREEN" + Style.RESET_ALL)
 
         elif pressed_key == ord('b') or pressed_key == ord('3'): # change color to blue
-            clr = (255,0,0)
+            options['pencil_color'] = (255,0,0)
             print("Color changed to " + Fore.BLUE + "BLUE" + Style.RESET_ALL)
 
         elif pressed_key == ord('y') or pressed_key == ord('4'): # change color to yellow
-            clr = (0,255,255)
+            options['pencil_color'] = (0,255,255)
             print("Color changed to " + Fore.YELLOW + "YELLOW" + Style.RESET_ALL)
 
         elif pressed_key == ord('+'): # increase pencil line size
