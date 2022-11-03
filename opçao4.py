@@ -92,6 +92,37 @@ def comparaçao(img):
     verdetotal=cv2.inRange(original_image,lvlmin_verde,lvlmax_verde)
     amarelototal=cv2.inRange(original_image,lvlmin_amarelo,lvlmax_amarelo)
 
+    if sum(azultotal)==0:
+        percazul=0
+    else:
+        percazul=sum(azul1)/sum(azultotal)
+    
+    if sum(vermelhototal)==0:
+        percvermelho=0
+    else:
+        percvermelho=sum(vermelho1)/sum(vermelhototal)
+
+    if sum(verdetotal)==0:
+        percverde=0
+    else:
+        percverde=sum(verde1)/sum(verdetotal)
+
+    if sum(amarelototal)==0:
+        percamarelo=0
+    else:
+        percamarelo=sum(amarelo1)/sum(amarelototal)
+    
+
+    accuracy=percazul+percvermelho+percverde+percamarelo
+
+    if accuracy==0:
+        accuracy='None'
+    else:
+        pass
+    
+    
+    
+
 def mouseCallback(event, x, y, flags, userdata, options):
 
     if event == cv2.EVENT_LBUTTONDOWN:
