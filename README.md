@@ -5,6 +5,13 @@ Projeto criado no âmbito da UC Programação de Sistemas Robóticos, Departamen
 **Objetivo:** Desenvolver uma aplicação de Augmented Reality Paint, em que o utilizador poderá pintar uma tela com recurso a um objeto colorido e a uma câmera.
 
 ---
+
+## Autores:
+* André Cabaço
+* Nuno Cunha
+* Carlos Santos
+
+---
 ## Funcionalidades:
 * Color Segmenter (o utilizador define em tempo real os parâmetros da fonte colorida de acordo com o ambiente à sua volta)
 * Modo normal (o utilizador pinta uma tela branca)
