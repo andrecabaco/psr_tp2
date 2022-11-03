@@ -190,6 +190,8 @@ def normal_mode():
     print("Press '-' to decrease the pencil line thickness.\n")
     print("Press 'c' to clean the canvas.\n")
     print("Press 'w' to save the drawing/painting.\n")
+    print("Press 's' to start drawing a rectangle\n")
+    print("Press 'e' to start drawing a circle.\n")
     print("------------------------------------------------------\n")
 
     with args.json as file:
@@ -375,6 +377,9 @@ def usp_mode():
     print("Press '-' to decrease the pencil line thickness.\n")
     print("Press 'c' to clean the canvas.\n")
     print("Press 'w' to save the drawing/painting.\n")
+    print("Press 's' to start drawing a rectangle\n")
+    print("Press 'e' to start drawing a circle.\n")
+    print("Press 'm' to switch between Mouse Mode and Camera Mode\n")
     print("------------------------------------------------------\n")
 
     with args.json as file:
@@ -596,6 +601,8 @@ def uvs_mode():
     print("Press '-' to decrease the pencil line thickness.\n")
     print("Press 'c' to clean the canvas.\n")
     print("Press 'w' to save the drawing/painting.\n")
+    print("Press 's' to start drawing a rectangle\n")
+    print("Press 'e' to start drawing a circle.\n")
     print("------------------------------------------------------\n")
 
     with args.json as file:
