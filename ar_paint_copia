@@ -21,6 +21,10 @@ parser.add_argument("-np", "--numbered_paint", help="Paint a numbered image.", a
 args = parser.parse_args()
 
 thickness=3
+
+x_mouse = None
+y_mouse = None
+
 # use_shake_prevention = args.use_shake_prevention
 # use_video_stream = args.use_video_stream
 
@@ -48,27 +52,50 @@ def distanceCalculate(p1, p2):
     dis = ((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2) ** 0.5
     return round(dis)
 
-def mouseCallback(event, x, y, flags, userdata, options):
+
+
+
+def draw_mouse(event, x, y, flags, param, color, thickness):
+
+    global drawing_mouse, xi_mouse, yi_mouse
 
     if event == cv2.EVENT_LBUTTONDOWN:
-        if options['is_drawing']:
-            print('Stop drawing')
-            options['is_drawing'] = False
-        else:
-            print('Start drawing')
-            options['is_drawing'] = True
+        drawing_mouse = True
+        print('Started painting at: (x, y) = ' + str(x) + ', ' + str(y))
+        xi_mouse = x
+        yi_mouse = y
+
+    elif event == cv2.EVENT_MOUSEMOVE:
+        if drawing_mouse:
+            cv2.line(param, (xi_mouse, yi_mouse), (x, y), color, thickness)
+            xi_mouse = x
+            yi_mouse = y
+
+    elif event == cv2.EVENT_LBUTTONUP:
+        drawing_mouse = False
+        cv2.line(param, (xi_mouse, yi_mouse), (x, y), color, thickness)
+        print('Ended painting at: (x, y) = ' + str(x) + ', ' + str(y))
+
+def mouseCallback(event, x, y, flags, userdata, options):
+
+    global x_mouse, y_mouse
+
+    if event == cv2.EVENT_LBUTTONDOWN:
+        options['is_drawing'] = True
+        x_mouse = x
+        y_mouse = y
 
     elif event == cv2.EVENT_MOUSEMOVE:
         if options['is_drawing']:
-            options['xs'].append(x)
-            options['ys'].append(y)
-            
-            if len(options['xs']) > 2:
-                x1 = options['xs'][-2]
-                y1 = options['ys'][-2]
-                x2 = options['xs'][-1]
-                y2 = options['ys'][-1]
-                cv2.line(options['pinguim_image'], (x1, y1), (x2, y2), options['pencil_color'], thickness)
+            cv2.line(options['pinguim_image'], (x_mouse, y_mouse), (x, y), options['pencil_color'], thickness)
+            x_mouse = x
+            y_mouse = y
+
+    elif event == cv2.EVENT_LBUTTONUP:
+        options['is_drawing'] = False
+        cv2.line(options['pinguim_image'], (x_mouse, y_mouse), (x, y), options['pencil_color'], thickness)
+
+
 #Function to mix the captured image with drawing (for uvs mode)
 def mix_images(canvas, frame):
     lvlmax_white = np.array([255, 255, 255])
@@ -147,6 +174,9 @@ def normal_mode():
         cv2.imshow(window_name3, flip_video3)
         x=mask_largest[1]
         y=mask_largest[2]
+        if x == None or y == None:
+            x = 6
+            y = 6
         centroide=(int(x),int(y)) 
         centroides.append(centroide)
         k=centroides.index(centroide)
@@ -299,6 +329,16 @@ def usp_mode():
     clr=(0,255,255)
     centroides=[]
 
+    global x_mouse, y_mouse
+
+    options = {'is_drawing' : False,'pinguim_image' : blank_image,
+               'xs' : [], 'ys' : [],'pencil_color' : (0,0,0)}
+
+    #For mouse drawing
+    mouse_drawing = False
+
+
+
     #For shapes
     drawing_circle = False
     drawing_rectangle = False
@@ -329,6 +369,9 @@ def usp_mode():
         cv2.imshow(window_name3, flip_video3)
         x=mask_largest[1]
         y=mask_largest[2]
+        if x == None or y == None:
+            x = 6
+            y = 6
         centroide=(int(x),int(y)) 
         centroides.append(centroide)
         k=centroides.index(centroide)
@@ -350,15 +393,32 @@ def usp_mode():
         
         #desenha na tela
         dist_usp=distanceCalculate(start_point, end_point)
-        
-        if dist_usp<100:
-            cv2.line(blank_image, start_point, end_point, clr, thickness)
-            flip_video5=cv2.flip(blank_image, 1)
-            cv2.imshow(window_name4, flip_video5)
+
+
+        if mouse_drawing == False:
+            if dist_usp<100:
+                cv2.line(blank_image, start_point, end_point, clr, thickness)
+                flip_video5=cv2.flip(blank_image, 1)
+                cv2.imshow(window_name4, flip_video5)
+            else:
+                cv2.circle(blank_image, end_point, thickness, clr, -1)
+                flip_video5=cv2.flip(blank_image, 1)
+                cv2.imshow(window_name4, flip_video5)
+
         else:
-            cv2.circle(blank_image, end_point, thickness, clr, -1)
-            flip_video5=cv2.flip(blank_image, 1)
-            cv2.imshow(window_name4, flip_video5)
+            options['pinguim_image'] = blank_image
+            options['pencil_color'] = clr
+
+            cv2.setMouseCallback(window_name4, partial(mouseCallback, options=options))
+            cv2.imshow(window_name4,blank_image)
+
+
+        
+
+        
+        
+        
+
         
 
         
@@ -398,6 +458,10 @@ def usp_mode():
             clr = (255,0,0)
             print("Color changed to " + Fore.BLUE + "BLUE" + Style.RESET_ALL)
 
+        elif pressed_key == ord('m'): # increase pencil line size
+            mouse_drawing = not mouse_drawing
+            print('mouse drawing is now ' + str(mouse_drawing))
+
         elif pressed_key == ord('+'): # increase pencil line size
             thickness +=1
             print('thickness is ' + str(thickness))
@@ -410,6 +474,44 @@ def usp_mode():
             else:
                 thickness -=1
                 print('thickness is ' + str(thickness))
+
+        #Draw a rectangle
+        elif pressed_key == ord('s'):
+            if not drawing_rectangle:
+                first_point = centroide
+                print('You started drawing a rectangle.')
+                drawing_rectangle = True
+            elif drawing_rectangle:
+                cv2.rectangle(blank_image, first_point, centroide, clr, thickness)
+                print('You just finished a rectangle.')
+                drawing_rectangle = False
+
+        #Draw a circle
+        elif pressed_key == ord('e'):
+            if not drawing_circle:
+                center = centroide
+                print('You started drawing a circle.')
+                drawing_circle = True
+            elif drawing_circle:
+                cv2.circle(blank_image, center, circle_radius, clr, thickness)
+                print('You just finished a circle.')
+                drawing_circle = False
+
+        # If the drawing flags are activated, it is shown the result in real time
+
+        elif drawing_rectangle:
+            image_rectangle = np.copy(blank_image)
+            cv2.rectangle(image_rectangle, first_point, centroide, clr, thickness)
+            flip_video5=cv2.flip(image_rectangle, 1)
+            cv2.imshow(window_name4, flip_video5)
+
+
+        elif drawing_circle:
+            circle_radius = distanceCalculate(center,centroide)
+            image_circle = np.copy(blank_image)
+            cv2.circle(image_circle, center, circle_radius, clr, thickness)
+            flip_video5=cv2.flip(image_circle, 1)
+            cv2.imshow(window_name4, flip_video5)
 
 
 
@@ -475,6 +577,9 @@ def uvs_mode():
         cv2.imshow(window_name3, flip_video3)
         x=mask_largest[1]
         y=mask_largest[2]
+        if x == None or y == None:
+            x = 6
+            y = 6
         centroide=(int(x),int(y)) 
         centroides.append(centroide)
         k=centroides.index(centroide)
@@ -611,12 +716,13 @@ def numbered_paint():
 
     
     window_name = "Orignal"
-    numbered_image=cv2.imread('pinguim.png') 
-    numbered_image2=cv2.imread('pinguim.png') 
+    numbered_image=cv2.imread('divisao.png') 
+    numbered_image2=cv2.imread('divisao.png') 
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
-    global thickness
+    global thickness, x_mouse, y_mouse
     options = {'is_drawing' : False,'pinguim_image' : numbered_image,
                'xs' : [], 'ys' : [],'pencil_color' : (0,0,0)}
+
     
 
     while True:
