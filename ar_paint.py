@@ -126,12 +126,13 @@ def comparaçao(img):
     
 
     accuracy=round(percazul+percvermelho+percverde+percamarelo,3)
+    accuracy_percent = accuracy * 100
     
     if accuracy==0:
         accuracy='None'
-        print('accuracy: '+accuracy)
+        print('accuracy: '+ str(accuracy_percent) + '%')
     else:
-        print('accuracy: '+accuracy)
+        print('accuracy: '+ str(accuracy_percent) + '%')
 
 
 def mouseCallback(event, x, y, flags, userdata, options):
@@ -839,6 +840,9 @@ def numbered_paint():
         cv2.imshow(window_name3, flip_video3)
         x=mask_largest[1]
         y=mask_largest[2]
+        if x == None or y == None:
+            x = 6
+            y = 6
         centroide=(int(x),int(y)) 
         centroides.append(centroide)
         k=centroides.index(centroide)
